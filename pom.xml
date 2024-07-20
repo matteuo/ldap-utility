@@ -10,6 +10,23 @@
 
     <name>LDAP Utility Library</name>
     <description>A utility library for LDAP operations.</description>
+    <url>https://github.com/matteuo/ldap-utility</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>matteuo</id>
+            <name>Matteo</name>
+            <email>contact@matteuo.dev</email>
+            <url>https://matteuo.dev</url>
+        </developer>
+    </developers>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
