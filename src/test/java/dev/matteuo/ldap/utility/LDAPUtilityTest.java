@@ -13,31 +13,39 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+/**
+ * Unit tests for the LDAPUtility class.
+ */
 public class LDAPUtilityTest {
 
     private InMemoryDirectoryServer server;
     private LDAPUtility ldapUtility;
 
+    /**
+     * Sets up the in-memory LDAP server and populates it with test data before each test.
+     *
+     * @throws Exception If an error occurs during setup.
+     */
     @Before
     public void setUp() throws Exception {
-        // Configurazione del server LDAP in memoria
+        // Configuration of the in-memory LDAP server
         InMemoryDirectoryServerConfig config = new InMemoryDirectoryServerConfig("dc=example,dc=com");
         config.addAdditionalBindCredentials("cn=Directory Manager", "password");
         server = new InMemoryDirectoryServer(config);
         server.startListening();
 
-        // Creazione dell'entry parent
+        // Creation of the parent entry
         server.add("dn: dc=example,dc=com",
                 "objectClass: domain",
                 "dc: example");
 
-        // Popolamento del server con dati di test
+        // Populating the server with test data
         server.add("dn: cn=John Doe,dc=example,dc=com",
                 "objectClass: inetOrgPerson",
                 "cn: John Doe",
                 "sn: Doe",
                 "mail: john.doe@example.com",
-                "userPassword: password"); // Aggiungi la password per John Doe
+                "userPassword: password"); // Add password for John Doe
 
         server.add("dn: cn=Jane Doe,dc=example,dc=com",
                 "objectClass: inetOrgPerson",
@@ -45,15 +53,25 @@ public class LDAPUtilityTest {
                 "sn: Doe",
                 "mail: jane.doe@example.com");
 
-        // Inizializzazione di LDAPUtility
+        // Initialization of LDAPUtility
         ldapUtility = new LDAPUtility("ldap://localhost:" + server.getListenPort());
     }
 
+    /**
+     * Shuts down the in-memory LDAP server after each test.
+     *
+     * @throws Exception If an error occurs during shutdown.
+     */
     @After
     public void tearDown() throws Exception {
         server.shutDown(true);
     }
 
+    /**
+     * Tests the authentication method of LDAPUtility.
+     *
+     * @throws Exception If an error occurs during the test.
+     */
     @Test
     public void testAuthentication() throws Exception {
         String baseDn = "cn=John Doe,dc=example,dc=com";
@@ -68,6 +86,11 @@ public class LDAPUtilityTest {
         assertEquals("john.doe@example.com", ldapObject.getMail());
     }
 
+    /**
+     * Tests the search method of LDAPUtility.
+     *
+     * @throws Exception If an error occurs during the test.
+     */
     @Test
     public void testSearch() throws Exception {
         String baseDn = "dc=example,dc=com";

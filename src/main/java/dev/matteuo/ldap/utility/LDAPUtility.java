@@ -13,10 +13,24 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+/**
+ * LDAPUtility provides methods to perform LDAP searches, authenticate users, and map LDAP attributes to objects.
+ */
 public class LDAPUtility {
 
+    /**
+     * Logger instance for logging events and errors.
+     */
     private static final Logger logger = LoggerFactory.getLogger(LDAPUtility.class);
+
+    /**
+     * URL of the LDAP server.
+     */
     private final String url;
+
+    /**
+     * Flag indicating whether to use SSL for the LDAP connection.
+     */
     private final boolean useSsl;
 
     /**
