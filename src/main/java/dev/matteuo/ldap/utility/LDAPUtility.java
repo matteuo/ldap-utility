@@ -1,5 +1,6 @@
 package dev.matteuo.ldap.utility;
 
+import dev.matteuo.codegen.SimpleClassGenerator;
 import dev.matteuo.ldap.constants.LDAPConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,9 +11,7 @@ import javax.naming.ldap.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
+import java.util.*;
 
 public class LDAPUtility {
 
@@ -218,6 +217,101 @@ public class LDAPUtility {
         }
 
         return results;
+    }
+
+    public String generateJavaClass(String baseDn, String filter, int limitResults, int pageSize, int searchScope, String className) throws Exception {
+        List<String> attributes = getDistinctAttributes(baseDn, filter, limitResults, pageSize, searchScope);
+        SimpleClassGenerator scg = new SimpleClassGenerator();
+        return scg.generateJavaClass(attributes, className);
+    }
+
+    /**
+     * Retrieves distinct attributes from an LDAP directory.
+     *
+     * @param baseDn       The base DN to start the search.
+     * @param filter       The search filter.
+     * @param limitResults The maximum number of results to return.
+     * @param pageSize     The number of results per page.
+     * @param searchScope  The scope of the search.
+     * @return A list of distinct attribute names found in the search.
+     * @throws Exception If an error occurs during the search.
+     */
+    public List<String> getDistinctAttributes(String baseDn, String filter, int limitResults, int pageSize, int searchScope) throws Exception {
+        LdapContext ctx = null;
+        Set<String> attributesSet = new HashSet<>();
+
+        try {
+            ctx = createContextSearch();
+
+            // Search controls
+            SearchControls ctls = new SearchControls();
+            ctls.setReturningAttributes(null); // Return all attributes
+            ctls.setSearchScope(searchScope);
+
+            byte[] cookie = null;
+            int totalResults = 0;
+
+            do {
+                ctx.setRequestControls(new Control[]{new PagedResultsControl(pageSize, cookie, Control.CRITICAL)});
+                NamingEnumeration<SearchResult> answer = ctx.search(baseDn, filter, ctls);
+
+                try {
+                    while (answer.hasMoreElements()) {
+                        if (limitResults != -1 && totalResults >= limitResults) {
+                            break;
+                        }
+                        SearchResult sr = answer.nextElement();
+                        Attributes attrs = sr.getAttributes();
+
+                        // Add all attribute names to the set
+                        NamingEnumeration<? extends Attribute> allAttrs = attrs.getAll();
+                        while (allAttrs.hasMore()) {
+                            Attribute attr = allAttrs.next();
+                            attributesSet.add(attr.getID());
+                        }
+                        totalResults++;
+                    }
+
+                    if (totalResults >= limitResults) {
+                        break;
+                    }
+
+                    // Cookie for the next page
+                    Control[] controls = ctx.getResponseControls();
+                    if (controls != null) {
+                        for (Control control : controls) {
+                            if (control instanceof PagedResultsResponseControl) {
+                                PagedResultsResponseControl prrc = (PagedResultsResponseControl) control;
+                                cookie = prrc.getCookie();
+                            }
+                        }
+                    }
+                } finally {
+                    if (answer != null) {
+                        try {
+                            answer.close();
+                        } catch (Exception e) {
+                            logger.error("Error closing search result: " + e.getMessage());
+                        }
+                    }
+                }
+            } while (cookie != null);
+
+        } catch (Exception e) {
+            logger.error("LDAP search operation failed: " + e.getMessage());
+            throw e;
+        } finally {
+            if (ctx != null) {
+                try {
+                    ctx.close();
+                } catch (Exception e) {
+                    logger.error("Error closing context connection: " + e.getMessage());
+                }
+            }
+        }
+
+        // Convert the Set to a List before returning
+        return new ArrayList<>(attributesSet);
     }
 
 }
