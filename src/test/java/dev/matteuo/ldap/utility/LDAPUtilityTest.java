@@ -2,16 +2,13 @@ package dev.matteuo.ldap.utility;
 
 import com.unboundid.ldap.listener.InMemoryDirectoryServer;
 import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
+import dev.matteuo.ldap.constants.LDAPConstants;
 import dev.matteuo.ldap.model.LDAPObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import javax.naming.NamingException;
 import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
  * Unit tests for the LDAPUtility class.
@@ -54,7 +51,7 @@ public class LDAPUtilityTest {
                 "mail: jane.doe@example.com");
 
         // Initialization of LDAPUtility
-        ldapUtility = new LDAPUtility("ldap://localhost:" + server.getListenPort());
+        ldapUtility = new LDAPUtility("ldap://localhost:" + server.getListenPort(), false);
     }
 
     /**
@@ -105,5 +102,60 @@ public class LDAPUtilityTest {
 
         assertNotNull(john);
         assertNotNull(jane);
+    }
+
+    /**
+     * Tests the getDistinctAttributes method of LDAPUtility.
+     *
+     * @throws Exception If an error occurs during the test.
+     */
+    @Test
+    public void testGetDistinctAttributes() throws Exception {
+        String baseDn = "dc=example,dc=com";
+        String filter = "(objectClass=inetOrgPerson)";
+
+        List<String> distinctAttributes = ldapUtility.getDistinctAttributes(baseDn, filter, 1000, 1000, LDAPConstants.SEARCH_SCOPE_SUBTREE);
+
+        assertNotNull(distinctAttributes);
+        assertTrue(distinctAttributes.contains("cn"));
+        assertTrue(distinctAttributes.contains("sn"));
+        assertTrue(distinctAttributes.contains("mail"));
+        assertTrue(distinctAttributes.contains("objectClass"));
+        assertTrue(distinctAttributes.contains("userPassword"));
+    }
+
+    /**
+     * Tests the generateJavaClass method of SimpleClassGenerator.
+     *
+     * @throws Exception If an error occurs during the test.
+     */
+    @Test
+    public void testGenerateJavaClass() throws Exception {
+        String baseDn = "dc=example,dc=com";
+        String filter = "(objectClass=inetOrgPerson)";
+        String className = "TestClass";
+
+        String generatedClass = ldapUtility.generateJavaClass(baseDn, filter, 1000, 1000, LDAPConstants.SEARCH_SCOPE_SUBTREE, className);
+
+        // Verify the generated class string
+        assertTrue(generatedClass.contains("public class " + className + " {"));
+        assertTrue(generatedClass.contains("private String cn;"));
+        assertTrue(generatedClass.contains("private String sn;"));
+        assertTrue(generatedClass.contains("private String mail;"));
+
+        assertTrue(generatedClass.contains("public String getCn() {"));
+        assertTrue(generatedClass.contains("return cn;"));
+        assertTrue(generatedClass.contains("public void setCn(String cn) {"));
+        assertTrue(generatedClass.contains("this.cn = cn;"));
+
+        assertTrue(generatedClass.contains("public String getSn() {"));
+        assertTrue(generatedClass.contains("return sn;"));
+        assertTrue(generatedClass.contains("public void setSn(String sn) {"));
+        assertTrue(generatedClass.contains("this.sn = sn;"));
+
+        assertTrue(generatedClass.contains("public String getMail() {"));
+        assertTrue(generatedClass.contains("return mail;"));
+        assertTrue(generatedClass.contains("public void setMail(String mail) {"));
+        assertTrue(generatedClass.contains("this.mail = mail;"));
     }
 }

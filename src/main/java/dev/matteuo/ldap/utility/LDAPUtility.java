@@ -4,7 +4,6 @@ import dev.matteuo.codegen.SimpleClassGenerator;
 import dev.matteuo.ldap.constants.LDAPConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import javax.naming.*;
 import javax.naming.directory.*;
 import javax.naming.ldap.*;
