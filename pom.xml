@@ -6,16 +6,15 @@
     <groupId>dev.matteuo</groupId>
     <artifactId>ldap-utility</artifactId>
     <version>1.0.0</version>
-    <packaging>jar</packaging>
 
-    <name>LDAP Utility Library</name>
+    <name>${project.groupId}:${project.artifactId}</name>
     <description>A utility library for LDAP operations.</description>
     <url>https://github.com/matteuo/ldap-utility</url>
 
     <licenses>
         <license>
             <name>MIT License</name>
-            <url>https://opensource.org/licenses/MIT</url>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
         </license>
     </licenses>
 
@@ -27,6 +26,12 @@
             <url>https://matteuo.dev</url>
         </developer>
     </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/matteuo/ldap-utility.git</connection>
+        <developerConnection>scm:git:ssh://github.com/matteuo/ldap-utility.git</developerConnection>
+        <url>http://github.com/matteuo/ldap-utility/tree/main</url>
+    </scm>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -68,51 +73,56 @@
 
     <build>
         <plugins>
-            <!-- Maven Compiler Plugin -->
+            <!-- sonatype -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.5.0</version>
+                <extensions>true</extensions>
                 <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
+                    <publishingServerId>central</publishingServerId>
                 </configuration>
             </plugin>
-
-            <!-- Maven JAR Plugin -->
+            <!-- javadoc -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.1.0</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-
-            <!-- Maven Install Plugin -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-                <version>2.5.2</version>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
+                        <id>attach-javadocs</id>
                         <goals>
-                            <goal>install-file</goal>
+                            <goal>jar</goal>
                         </goals>
-                        <configuration>
-                            <groupId>dev.matteuo</groupId>
-                            <artifactId>ldap-utility</artifactId>
-                            <version>1.0.0</version>
-                            <packaging>jar</packaging>
-                            <file>${project.build.directory}/ldap-utility-1.0.0.jar</file>
-                            <generatePom>true</generatePom>
-                            <localRepositoryPath>/path/to/local/repo</localRepositoryPath>
-                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- source -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.2.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- pom, .asc -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifact</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
